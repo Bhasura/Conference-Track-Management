@@ -47,14 +47,22 @@ namespace NUnitTests
         {
             List<Tracks> track1 = new List<Tracks>();
             int minutesOfNewTalk = 0;
+            return  minutesOfNewTalk = MinutesOfNewTalk(newTalk, minutesOfNewTalk, track1);
+
+        }
+
+        private static int MinutesOfNewTalk(string newTalk, int minutesOfNewTalk, List<Tracks> track1)
+        {
             if (newTalk.Contains("60min"))
             {
                 minutesOfNewTalk = OnAddTalkName(track1, newTalk, 60);
             }
+
             if (newTalk.Contains("45min"))
             {
                 minutesOfNewTalk = OnAddTalkName(track1, newTalk, 45);
             }
+
             if (newTalk.Contains("30min"))
             {
                 minutesOfNewTalk = OnAddTalkName(track1, newTalk, 30);
