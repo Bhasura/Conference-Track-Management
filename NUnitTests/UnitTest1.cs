@@ -12,7 +12,13 @@ namespace NUnitTests
 
         [Test]
         [TestCase("60min", "60min")]
-        public void AddingAnySessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        {
+            AssertTrue(input, expected);
+        }
+
+        [TestCase("45min", "45min")]
+        public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
@@ -31,6 +37,14 @@ namespace NUnitTests
             List<Tracks> track1 = new List<Tracks>();
             string output = string.Empty;
             if (newTalk.Contains("60min"))
+            {
+                Tracks track = new Tracks(newTalk);
+                track1.Add(track);
+                int indexOfTalk = track1.IndexOf(track);
+                output = track1[indexOfTalk].TalkName;
+
+            }
+            if (newTalk.Contains("45min"))
             {
                 Tracks track = new Tracks(newTalk);
                 track1.Add(track);
