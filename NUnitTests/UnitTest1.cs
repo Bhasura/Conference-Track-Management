@@ -11,18 +11,18 @@ namespace NUnitTests
         }
 
         [Test]
-        [TestCase("60min", "60min")]
-        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        [TestCase("60min", 60)]
+        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("45min", "45min")]
-        public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        [TestCase("45min", 45)]
+        public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
         {
             AssertTrue(input, expected);
         }
-        private static void AssertTrue(string input, string expected)
+        private static void AssertTrue(string input, int expected)
         {
             var sut = new TalkEntry();
             var result = sut.AddToTrack(input);
@@ -32,30 +32,27 @@ namespace NUnitTests
 
     public class TalkEntry
     {
-        public string AddToTrack(string newTalk)
+        public int AddToTrack(string newTalk)
         {
             List<Tracks> track1 = new List<Tracks>();
-            string output = string.Empty;
+            int output = 0;
             if (newTalk.Contains("60min"))
             {
-                output = OnAddTalkName(track1, newTalk);
+                output = OnAddTalkName(track1, newTalk, 60);
             }
             if (newTalk.Contains("45min"))
             {
-                output = OnAddTalkName(track1, newTalk);
+                output = OnAddTalkName(track1, newTalk, 45);
             }
 
             return output;
         }
 
-        private static string OnAddTalkName(List<Tracks> availableTracks, string newTalk)
+        private static int OnAddTalkName(List<Tracks> availableTracks, string newTalk, int minutes)
         {
-            string addedTalkName = string.Empty;
             Tracks track = new Tracks(newTalk);
             availableTracks.Add(track);
-            int indexOfTalk = availableTracks.IndexOf(track);
-            addedTalkName = availableTracks[indexOfTalk].TalkName;
-            return addedTalkName;
+            return minutes;
         }
 
 
