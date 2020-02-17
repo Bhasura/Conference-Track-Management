@@ -38,23 +38,27 @@ namespace NUnitTests
             string output = string.Empty;
             if (newTalk.Contains("60min"))
             {
-                Tracks track = new Tracks(newTalk);
-                track1.Add(track);
-                int indexOfTalk = track1.IndexOf(track);
-                output = track1[indexOfTalk].TalkName;
-
+                output = OnAddTalkName(track1, newTalk);
             }
             if (newTalk.Contains("45min"))
             {
-                Tracks track = new Tracks(newTalk);
-                track1.Add(track);
-                int indexOfTalk = track1.IndexOf(track);
-                output = track1[indexOfTalk].TalkName;
-
+                output = OnAddTalkName(track1, newTalk);
             }
 
             return output;
         }
+
+        private static string OnAddTalkName(List<Tracks> availableTracks, string newTalk)
+        {
+            string addedTalkName = string.Empty;
+            Tracks track = new Tracks(newTalk);
+            availableTracks.Add(track);
+            int indexOfTalk = availableTracks.IndexOf(track);
+            addedTalkName = availableTracks[indexOfTalk].TalkName;
+            return addedTalkName;
+        }
+
+
     }
 
     public class Tracks
