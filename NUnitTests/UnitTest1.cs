@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace NUnitTests
@@ -11,29 +11,37 @@ namespace NUnitTests
         }
 
         [Test]
-        [TestCase("60min", 60)]
-        [TestCase("Writing Fast Tests Against Enterprise Rails 60min", 60)]
+        [TestCase("Writing Fast Tests Against Enterprise Rails 60min", "09:00AM Writing Fast Tests Against Enterprise Rails 60min")]
 
-        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
+        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("45min", 45)]
-        [TestCase("Ruby Errors from Mismatched Gem Versions 45min", 45)]
-
-        public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
+        [TestCase("Ruby Errors from Mismatched Gem Versions 45min", "09:00AM Ruby Errors from Mismatched Gem Versions 45min")]
+        public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("30min", 30)]
-        [TestCase("Lua for the Masses 30min ", 30)]
-        public void Adding30MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
+        [TestCase("Lua for the Masses 30min", "09:00AM Lua for the Masses 30min")]
+        public void Adding30MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
-        private static void AssertTrue(string input, int expected)
+
+        [TestCase("Rails for Python Developers lightning", "09:00AM Rails for Python Developers lightning")]
+        public void AddingLightningMinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        {
+            AssertTrue(input, expected);
+        }
+        //public void GetTrack1ReturnsListOfTalks(string input, int expected)
+        //{
+        //    var sut = new TalkEntry();
+        //    var result = sut.AddToTrack(input);
+        //    Assert.That(result, Is.EqualTo(expected));
+        //}
+        private static void AssertTrue(string input, string expected)
         {
             var sut = new TalkEntry();
             var result = sut.AddToTrack(input);
@@ -43,51 +51,66 @@ namespace NUnitTests
 
     public class TalkEntry
     {
-        public int AddToTrack(string newTalk)
+        public string AddToTrack(string newTalk)
         {
-            List<Tracks> track1 = new List<Tracks>();
-            int minutesOfNewTalk = 0;
-            return  minutesOfNewTalk = MinutesOfNewTalk(newTalk, minutesOfNewTalk, track1);
-
+            var track1 = GetTrack1List();
+            List morningSession = new List();
+            return  MinutesOfNewTalk(newTalk, morningSession, track1);
         }
 
-        private static int MinutesOfNewTalk(string newTalk, int minutesOfNewTalk, List<Tracks> track1)
+        private static List<Tracks> GetTrack1List()
+        {
+            List<Tracks> track1 = new List<Tracks>();
+            return track1;
+        }
+
+
+        private static string MinutesOfNewTalk(string newTalk, List minutesOfNewTalk, List<Tracks> availableTracks)
         {
             if (newTalk.Contains("60min"))
             {
-                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 60);
+                OnAddTalkName(availableTracks, newTalk);
             }
 
             if (newTalk.Contains("45min"))
             {
-                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 45);
+                OnAddTalkName(availableTracks, newTalk);
             }
 
             if (newTalk.Contains("30min"))
             {
-                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 30);
+                OnAddTalkName(availableTracks, newTalk);
             }
 
-            return minutesOfNewTalk;
+            if (newTalk.Contains("lightning"))
+            { 
+                OnAddTalkName(availableTracks, newTalk);
+            }
+
+            return availableTracks[0].ToString();
         }
 
-        private static int OnAddTalkName(List<Tracks> availableTracks, string newTalk, int minutes)
+        private static void OnAddTalkName(List<Tracks> availableTracks, string newTalk)
         {
-            Tracks track = new Tracks(newTalk);
+            var track = new Tracks(newTalk, "09:00AM ");
             availableTracks.Add(track);
-            return minutes;
         }
-
-
     }
 
     public class Tracks
     {
-        public string TalkName { get; set; }
+        private string TalkName { get; set; }
+        private string ScheduleTime { get; set; } 
 
-        public Tracks(string talkName)
+        public Tracks(string talkName, string availableTime)
         {
             TalkName = talkName;
+            ScheduleTime = availableTime;
+        }
+
+        public override string ToString()
+        {
+            return ScheduleTime + TalkName;
         }
     }
   
