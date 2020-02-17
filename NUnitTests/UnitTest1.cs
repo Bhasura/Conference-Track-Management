@@ -11,14 +11,8 @@ namespace NUnitTests
         }
 
         [Test]
-        [TestCase("60min", "added to Track")]
-        public void Adding60MinSessionReturnsAddedToTrack(string input, string expected)
-        {
-            AssertTrue(input, expected);
-        }
-        [Test]
-        [TestCase("60min", "added to Track")]
-        public void Adding60MinSessionAddsToTrackAndReturnsAddedToTrack(string input, string expected)
+        [TestCase("60min", "60min")]
+        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
@@ -40,7 +34,8 @@ namespace NUnitTests
             {
                 Tracks track = new Tracks(newTalk);
                 track1.Add(track);
-                output = "added to Track";
+                int indexOfTalk = track1.IndexOf(track);
+                output = track1[indexOfTalk].TalkName;
 
             }
 
