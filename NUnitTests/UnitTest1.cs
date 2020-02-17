@@ -12,12 +12,16 @@ namespace NUnitTests
 
         [Test]
         [TestCase("60min", 60)]
+        [TestCase("Writing Fast Tests Against Enterprise Rails 60min", 60)]
+
         public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
         {
             AssertTrue(input, expected);
         }
 
         [TestCase("45min", 45)]
+        [TestCase("Ruby Errors from Mismatched Gem Versions 45min", 45)]
+
         public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
         {
             AssertTrue(input, expected);
