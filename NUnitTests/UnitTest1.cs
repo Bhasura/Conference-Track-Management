@@ -12,7 +12,7 @@ namespace NUnitTests
 
         [Test]
         [TestCase("60min", "60min")]
-        public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
+        public void AddingAnySessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
