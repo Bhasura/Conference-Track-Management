@@ -26,6 +26,13 @@ namespace NUnitTests
         {
             AssertTrue(input, expected);
         }
+
+        [TestCase("30min", 30)]
+        [TestCase("Lua for the Masses 30min ", 30)]
+        public void Adding30MinSessionAddsToTrackAndReturnsAddedTalkName(string input, int expected)
+        {
+            AssertTrue(input, expected);
+        }
         private static void AssertTrue(string input, int expected)
         {
             var sut = new TalkEntry();
@@ -39,17 +46,21 @@ namespace NUnitTests
         public int AddToTrack(string newTalk)
         {
             List<Tracks> track1 = new List<Tracks>();
-            int output = 0;
+            int minutesOfNewTalk = 0;
             if (newTalk.Contains("60min"))
             {
-                output = OnAddTalkName(track1, newTalk, 60);
+                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 60);
             }
             if (newTalk.Contains("45min"))
             {
-                output = OnAddTalkName(track1, newTalk, 45);
+                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 45);
+            }
+            if (newTalk.Contains("30min"))
+            {
+                minutesOfNewTalk = OnAddTalkName(track1, newTalk, 30);
             }
 
-            return output;
+            return minutesOfNewTalk;
         }
 
         private static int OnAddTalkName(List<Tracks> availableTracks, string newTalk, int minutes)
