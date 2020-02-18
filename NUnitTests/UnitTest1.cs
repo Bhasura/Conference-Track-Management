@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace NUnitTests
@@ -8,7 +10,9 @@ namespace NUnitTests
         [SetUp]
         public void Setup()
         {
+           
         }
+        
 
         [Test]
         [TestCase("Writing Fast Tests Against Enterprise Rails 60min",
@@ -38,81 +42,97 @@ namespace NUnitTests
             AssertTrue(input, expected);
         }
 
-        //public void GetTrack1ReturnsListOfTalks(string input, int expected)
-        //{
-        //    var sut = new TalkEntry();
-        //    var result = sut.AddToTrack(input);
-        //    Assert.That(result, Is.EqualTo(expected));
-        //}
+        [Test]
+        public void AddingMultipleTalksToMorningSessionTrackAndReturnsAllTheAddedTracks()
+        {
+            var sut = new TalkEntry();
+            sut.InitConferenceScheduler();
+            var result1 = sut.AddToTrack("Lua for the Masses 30min");
+            var result2 = sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
+            Assert.That(result1, Is.EqualTo("09:00AM Lua for the Masses 30min"));
+            Assert.That(result2, Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
+        }
+
         private static void AssertTrue(string input, string expected)
         {
             var sut = new TalkEntry();
+            sut.InitConferenceScheduler();
             var result = sut.AddToTrack(input);
             Assert.That(result, Is.EqualTo(expected));
         }
     }
 
+  
+
     public class TalkEntry
     {
+        private static List<Session> Track;
+        private static List<string> TrackOutput;
+        private static Session session;
+
         public string AddToTrack(string newTalk)
         {
-            var track = new Tracks();
-            var session = new Session();
-           // var track1 = GetTrack1List();
-            return MinutesOfNewTalk(newTalk, track, session);
+            string newOutputLine = MinutesOfNewTalk(newTalk);
+            TrackOutput.Add(newOutputLine);
+            return newOutputLine;
         }
 
-        //private static List<Talk> GetTrack1List()
-        //{
-        //    List<Talk> track1 = new List<Talk>();
-        //    return track1;
-        //}
+        public void InitConferenceScheduler()
+        {
+            Track = new List<Session>();
+            TrackOutput = new List<string>();
+            session = new Session();
+        }
 
-        private static string MinutesOfNewTalk(string newTalk, Tracks track, Session session)
+        private static string MinutesOfNewTalk(string newTalk)
         {
             string output = string.Empty;
             if (newTalk.Contains("60min"))
             {
-                output = OnAddTalkName(newTalk, track, session);
+                output = OnAddTalkName(newTalk);
             }
 
             if (newTalk.Contains("45min"))
             {
-                output = OnAddTalkName(newTalk, track, session);
+                output = OnAddTalkName(newTalk);
             }
 
             if (newTalk.Contains("30min"))
             {
-                output = OnAddTalkName(newTalk, track, session);
+                output = OnAddTalkName(newTalk);
 
             }
 
             if (newTalk.Contains("lightning"))
             {
-                output = OnAddTalkName(newTalk, track, session);
+                output = OnAddTalkName(newTalk);
             }
 
             return output;
         }
 
-        private static string OnAddTalkName(string newTalk, Tracks track, Session session)
+        private static string OnAddTalkName(string newTalk)
         {
-            session.SetMorningSessionAvailability(newTalk);
-            track.Track.Add(session);
-            return track.Track[0].MorningSession[0].Time + " " + track.Track[0].MorningSession[0].TalkName;
+            string newEntry = string.Empty;
+
+            if (Track.Any())
+            {
+                session.SetMorningSessionAvailability(newTalk);
+                var indexOfTalkName = session.GetTalkNameIndex(newTalk);
+                newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+            }
+            else
+            { 
+                Track.Add(session);
+                session.SetMorningSessionAvailability(newTalk);
+                var indexOfTalkName = session.GetTalkNameIndex(newTalk);
+                newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+            }
+
+            return newEntry;
         }
     }
 
-    public class Tracks
-    {
-        public List<Session> Track { get; set; }
-
-        public Tracks()
-        {
-            Track = new List<Session>();
-        }
-
-    }
     public class Talk
     {
         private string TalkName { get; set; }
@@ -152,12 +172,32 @@ namespace NUnitTests
                 {
                     MorningSession[i].IsAvailable = false;
                     MorningSession[i].TalkName = talkName;
+                    break;
                 }
                 else
                 {
                     i++;
                 }
             }
+        }
+
+        public int GetTalkNameIndex(string talkName)
+        {
+            var indexOfTalkName = 0;
+            for (var i = 0; i < MorningSession.Count; i++)
+            {
+                if (MorningSession[i].TalkName == talkName)
+                {
+                    indexOfTalkName = i;
+                }
+                else
+                {
+                    indexOfTalkName = 0;
+                }
+                
+            }
+
+            return indexOfTalkName;
         }
 
         private Schedule SetSchedule(string time, bool availability, string talkName)
