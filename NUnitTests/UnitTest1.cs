@@ -11,14 +11,16 @@ namespace NUnitTests
         }
 
         [Test]
-        [TestCase("Writing Fast Tests Against Enterprise Rails 60min", "09:00AM Writing Fast Tests Against Enterprise Rails 60min")]
+        [TestCase("Writing Fast Tests Against Enterprise Rails 60min",
+            "09:00AM Writing Fast Tests Against Enterprise Rails 60min")]
 
         public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("Ruby Errors from Mismatched Gem Versions 45min", "09:00AM Ruby Errors from Mismatched Gem Versions 45min")]
+        [TestCase("Ruby Errors from Mismatched Gem Versions 45min",
+            "09:00AM Ruby Errors from Mismatched Gem Versions 45min")]
         public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
@@ -35,6 +37,7 @@ namespace NUnitTests
         {
             AssertTrue(input, expected);
         }
+
         //public void GetTrack1ReturnsListOfTalks(string input, int expected)
         //{
         //    var sut = new TalkEntry();
@@ -53,56 +56,69 @@ namespace NUnitTests
     {
         public string AddToTrack(string newTalk)
         {
-            var track1 = GetTrack1List();
-            List morningSession = new List();
-            return  MinutesOfNewTalk(newTalk, morningSession, track1);
+            var track = new Tracks();
+            var session = new Session();
+           // var track1 = GetTrack1List();
+            return MinutesOfNewTalk(newTalk, track, session);
         }
 
-        private static List<Tracks> GetTrack1List()
-        {
-            List<Tracks> track1 = new List<Tracks>();
-            return track1;
-        }
+        //private static List<Talk> GetTrack1List()
+        //{
+        //    List<Talk> track1 = new List<Talk>();
+        //    return track1;
+        //}
 
-
-        private static string MinutesOfNewTalk(string newTalk, List minutesOfNewTalk, List<Tracks> availableTracks)
+        private static string MinutesOfNewTalk(string newTalk, Tracks track, Session session)
         {
+            string output = string.Empty;
             if (newTalk.Contains("60min"))
             {
-                OnAddTalkName(availableTracks, newTalk);
+                output = OnAddTalkName(newTalk, track, session);
             }
 
             if (newTalk.Contains("45min"))
             {
-                OnAddTalkName(availableTracks, newTalk);
+                output = OnAddTalkName(newTalk, track, session);
             }
 
             if (newTalk.Contains("30min"))
             {
-                OnAddTalkName(availableTracks, newTalk);
+                output = OnAddTalkName(newTalk, track, session);
+
             }
 
             if (newTalk.Contains("lightning"))
-            { 
-                OnAddTalkName(availableTracks, newTalk);
+            {
+                output = OnAddTalkName(newTalk, track, session);
             }
 
-            return availableTracks[0].ToString();
+            return output;
         }
 
-        private static void OnAddTalkName(List<Tracks> availableTracks, string newTalk)
+        private static string OnAddTalkName(string newTalk, Tracks track, Session session)
         {
-            var track = new Tracks(newTalk, "09:00AM ");
-            availableTracks.Add(track);
+            session.SetMorningSessionAvailability(newTalk);
+            track.Track.Add(session);
+            return track.Track[0].MorningSession[0].Time + " " + track.Track[0].MorningSession[0].TalkName;
         }
     }
 
     public class Tracks
     {
-        private string TalkName { get; set; }
-        private string ScheduleTime { get; set; } 
+        public List<Session> Track { get; set; }
 
-        public Tracks(string talkName, string availableTime)
+        public Tracks()
+        {
+            Track = new List<Session>();
+        }
+
+    }
+    public class Talk
+    {
+        private string TalkName { get; set; }
+        private string ScheduleTime { get; set; }
+
+        public Talk(string talkName, string availableTime)
         {
             TalkName = talkName;
             ScheduleTime = availableTime;
@@ -110,8 +126,60 @@ namespace NUnitTests
 
         public override string ToString()
         {
-            return ScheduleTime + TalkName;
+            return ScheduleTime + " " + TalkName;
         }
     }
-  
+
+    public class Session
+    {
+        public List<Schedule> MorningSession { get; set; }
+        private List<Schedule> AfternoonSession { get; set; }
+
+        public Session()
+        {
+            MorningSession = new List<Schedule>()
+            {
+                SetSchedule("09:00AM", true, ""),
+                SetSchedule("10:00AM", true, "")
+            };
+        }
+
+        public void SetMorningSessionAvailability(string talkName)
+        {
+            for (var i = 0; i < MorningSession.Count;)
+            {
+                if (MorningSession[i].IsAvailable)
+                {
+                    MorningSession[i].IsAvailable = false;
+                    MorningSession[i].TalkName = talkName;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+        }
+
+        private Schedule SetSchedule(string time, bool availability, string talkName)
+        {
+            var schedule = new Schedule(time, availability, talkName);
+            return schedule;
+        }
+    }
+
+    public class Schedule
+    {
+        public string Time { get; set; }
+        public bool IsAvailable { get; set; }
+        public string TalkName { get; set; }
+
+        public Schedule(string time, bool isAvailable, string talkName)
+        {
+            Time = time;
+            IsAvailable = isAvailable;
+            TalkName = talkName;
+        }
+
+
+    }
 }
