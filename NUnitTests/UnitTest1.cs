@@ -13,7 +13,6 @@ namespace NUnitTests
            
         }
         
-
         [Test]
         [TestCase("Writing Fast Tests Against Enterprise Rails 60min",
             "09:00AM Writing Fast Tests Against Enterprise Rails 60min")]
@@ -43,7 +42,7 @@ namespace NUnitTests
         }
 
         [Test]
-        public void AddingMultipleTalksToMorningSessionTrackAndReturnsAllTheAddedTracks()
+        public void AddingTwoTalksToTrackSessionAndReturnsAllTheAddedTracks()
         {
             var sut = new Scheduler();
             sut.InitConferenceScheduler();
@@ -55,6 +54,20 @@ namespace NUnitTests
             Assert.That(result[1], Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
         }
 
+        [Test]
+        public void AddingThreeTalksToTrackSessionAndReturnsAllTheAddedTracks()
+        {
+            var sut = new Scheduler();
+            sut.InitConferenceScheduler();
+            sut.AddToTrack("Lua for the Masses 30min");
+            sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
+            sut.AddToTrack("Communicating Over Distance 60min");
+
+            var result = sut.GetTrackOutput();
+            Assert.That(result[0], Is.EqualTo("09:00AM Lua for the Masses 30min"));
+            Assert.That(result[1], Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[2], Is.EqualTo("11:00AM Communicating Over Distance 60min"));
+        }
         private static void AssertTrue(string input, string expected)
         {
             var sut = new Scheduler();
@@ -92,29 +105,29 @@ namespace NUnitTests
 
         private static string MinutesOfNewTalk(string newTalk)
         {
-            string output = string.Empty;
+            string scheduledTalk = string.Empty;
             if (newTalk.Contains("60min"))
             {
-                output = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk);
             }
 
             if (newTalk.Contains("45min"))
             {
-                output = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk);
             }
 
             if (newTalk.Contains("30min"))
             {
-                output = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk);
 
             }
 
             if (newTalk.Contains("lightning"))
             {
-                output = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk);
             }
 
-            return output;
+            return scheduledTalk;
         }
 
         private static string OnAddTalkName(string newTalk)
@@ -154,7 +167,8 @@ namespace NUnitTests
             MorningSession = new List<Schedule>()
             {
                 SetSchedule("09:00AM", true, ""),
-                SetSchedule("10:00AM", true, "")
+                SetSchedule("10:00AM", true, ""),
+                SetSchedule("11:00AM", true, "")
             };
         }
 
@@ -178,15 +192,16 @@ namespace NUnitTests
         public int GetTalkNameIndex(string talkName)
         {
             var indexOfTalkName = 0;
-            for (var i = 0; i < MorningSession.Count; i++)
+            for (var i = 0; i < MorningSession.Count;)
             {
                 if (MorningSession[i].TalkName == talkName)
                 {
                     indexOfTalkName = i;
+                    break;
                 }
                 else
                 {
-                    indexOfTalkName = 0;
+                    i++;
                 }
                 
             }
