@@ -45,7 +45,7 @@ namespace NUnitTests
         [Test]
         public void AddingMultipleTalksToMorningSessionTrackAndReturnsAllTheAddedTracks()
         {
-            var sut = new TalkEntry();
+            var sut = new Scheduler();
             sut.InitConferenceScheduler();
             sut.AddToTrack("Lua for the Masses 30min");
             sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
@@ -57,7 +57,7 @@ namespace NUnitTests
 
         private static void AssertTrue(string input, string expected)
         {
-            var sut = new TalkEntry();
+            var sut = new Scheduler();
             sut.InitConferenceScheduler();
             sut.AddToTrack(input);
             var result = sut.GetTrackOutput();
@@ -67,10 +67,10 @@ namespace NUnitTests
 
   
 
-    public class TalkEntry
+    public class Scheduler
     {
         private static List<Session> Track;
-        public static List<string> TrackOutput;
+        private static List<string> TrackOutput;
         private static Session TrackSession;
 
         public void AddToTrack(string newTalk)
