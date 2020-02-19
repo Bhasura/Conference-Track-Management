@@ -15,7 +15,7 @@ namespace NUnitTests
         
         [Test]
         [TestCase("Writing Fast Tests Against Enterprise Rails 60min",
-            "09:00AM Writing Fast Tests Against Enterprise Rails 60min")]
+            "09:00 am Writing Fast Tests Against Enterprise Rails 60min")]
 
         public void Adding60MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
@@ -23,19 +23,19 @@ namespace NUnitTests
         }
 
         [TestCase("Ruby Errors from Mismatched Gem Versions 45min",
-            "09:00AM Ruby Errors from Mismatched Gem Versions 45min")]
+            "09:00 am Ruby Errors from Mismatched Gem Versions 45min")]
         public void Adding45MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("Lua for the Masses 30min", "09:00AM Lua for the Masses 30min")]
+        [TestCase("Lua for the Masses 30min", "09:00 am Lua for the Masses 30min")]
         public void Adding30MinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
         }
 
-        [TestCase("Rails for Python Developers lightning", "09:00AM Rails for Python Developers lightning")]
+        [TestCase("Rails for Python Developers lightning", "09:00 am Rails for Python Developers lightning")]
         public void AddingLightningMinSessionAddsToTrackAndReturnsAddedTalkName(string input, string expected)
         {
             AssertTrue(input, expected);
@@ -50,8 +50,8 @@ namespace NUnitTests
             sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
 
             var result = sut.GetTrackOutput();
-            Assert.That(result[0], Is.EqualTo("09:00AM Lua for the Masses 30min"));
-            Assert.That(result[1], Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[0], Is.EqualTo("09:00 am Lua for the Masses 30min"));
+            Assert.That(result[1], Is.EqualTo("10:00 am Ruby Errors from Mismatched Gem Versions 45min"));
         }
 
         [Test]
@@ -64,10 +64,11 @@ namespace NUnitTests
             sut.AddToTrack("Communicating Over Distance 60min");
 
             var result = sut.GetTrackOutput();
-            Assert.That(result[0], Is.EqualTo("09:00AM Lua for the Masses 30min"));
-            Assert.That(result[1], Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
-            Assert.That(result[2], Is.EqualTo("11:00AM Communicating Over Distance 60min"));
+            Assert.That(result[0], Is.EqualTo("09:00 am Lua for the Masses 30min"));
+            Assert.That(result[1], Is.EqualTo("10:00 am Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[2], Is.EqualTo("11:00 am Communicating Over Distance 60min"));
         }
+
         private static void AssertTrue(string input, string expected)
         {
             var sut = new Scheduler();
@@ -152,7 +153,7 @@ namespace NUnitTests
             string newEntry;
             TrackSession.SetMorningSessionAvailability(newTalk);
             var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
-            newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+            newEntry = Track[0].MorningSession[indexOfTalkName].Time.ToString("HH:mm tt") + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
             return newEntry;
         }
     }
@@ -166,9 +167,10 @@ namespace NUnitTests
         {
             MorningSession = new List<Schedule>()
             {
-                SetSchedule("09:00AM", true, ""),
-                SetSchedule("10:00AM", true, ""),
-                SetSchedule("11:00AM", true, "")
+                SetSchedule(new DateTime(2020,2,19,9,0,0,0), true, ""),
+                SetSchedule(new DateTime(2020,2,19,10,0,0,0), true, ""),
+                SetSchedule(new DateTime(2020,2,19,11,0,0,0), true, ""),
+                SetSchedule(new DateTime(2020,2,19,12,0,0,0), false, "Lunch")
             };
         }
 
@@ -209,7 +211,7 @@ namespace NUnitTests
             return indexOfTalkName;
         }
 
-        private Schedule SetSchedule(string time, bool availability, string talkName)
+        private Schedule SetSchedule(DateTime time, bool availability, string talkName)
         {
             var schedule = new Schedule(time, availability, talkName);
             return schedule;
@@ -218,11 +220,11 @@ namespace NUnitTests
 
     public class Schedule
     {
-        public string Time { get; set; }
+        public DateTime Time { get; set; }
         public bool IsAvailable { get; set; }
         public string TalkName { get; set; }
 
-        public Schedule(string time, bool isAvailable, string talkName)
+        public Schedule(DateTime time, bool isAvailable, string talkName)
         {
             Time = time;
             IsAvailable = isAvailable;
