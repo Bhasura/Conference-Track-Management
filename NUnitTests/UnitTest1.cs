@@ -47,18 +47,21 @@ namespace NUnitTests
         {
             var sut = new TalkEntry();
             sut.InitConferenceScheduler();
-            var result1 = sut.AddToTrack("Lua for the Masses 30min");
-            var result2 = sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
-            Assert.That(result1, Is.EqualTo("09:00AM Lua for the Masses 30min"));
-            Assert.That(result2, Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
+            sut.AddToTrack("Lua for the Masses 30min");
+            sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
+
+            var result = sut.GetTrackOutput();
+            Assert.That(result[0], Is.EqualTo("09:00AM Lua for the Masses 30min"));
+            Assert.That(result[1], Is.EqualTo("10:00AM Ruby Errors from Mismatched Gem Versions 45min"));
         }
 
         private static void AssertTrue(string input, string expected)
         {
             var sut = new TalkEntry();
             sut.InitConferenceScheduler();
-            var result = sut.AddToTrack(input);
-            Assert.That(result, Is.EqualTo(expected));
+            sut.AddToTrack(input);
+            var result = sut.GetTrackOutput();
+            Assert.That(result[0], Is.EqualTo(expected));
         }
     }
 
@@ -67,21 +70,24 @@ namespace NUnitTests
     public class TalkEntry
     {
         private static List<Session> Track;
-        private static List<string> TrackOutput;
-        private static Session session;
+        public static List<string> TrackOutput;
+        private static Session TrackSession;
 
-        public string AddToTrack(string newTalk)
+        public void AddToTrack(string newTalk)
         {
             string newOutputLine = MinutesOfNewTalk(newTalk);
             TrackOutput.Add(newOutputLine);
-            return newOutputLine;
         }
 
+        public List<string> GetTrackOutput()
+        {
+            return TrackOutput;
+        }
         public void InitConferenceScheduler()
         {
             Track = new List<Session>();
             TrackOutput = new List<string>();
-            session = new Session();
+            TrackSession = new Session();
         }
 
         private static string MinutesOfNewTalk(string newTalk)
@@ -117,36 +123,24 @@ namespace NUnitTests
 
             if (Track.Any())
             {
-                session.SetMorningSessionAvailability(newTalk);
-                var indexOfTalkName = session.GetTalkNameIndex(newTalk);
-                newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+                newEntry = GetNewlyAddedSessionDetails(newTalk);
             }
             else
             { 
-                Track.Add(session);
-                session.SetMorningSessionAvailability(newTalk);
-                var indexOfTalkName = session.GetTalkNameIndex(newTalk);
-                newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+                Track.Add(TrackSession);
+                newEntry = GetNewlyAddedSessionDetails(newTalk);
             }
 
             return newEntry;
         }
-    }
 
-    public class Talk
-    {
-        private string TalkName { get; set; }
-        private string ScheduleTime { get; set; }
-
-        public Talk(string talkName, string availableTime)
+        private static string GetNewlyAddedSessionDetails(string newTalk)
         {
-            TalkName = talkName;
-            ScheduleTime = availableTime;
-        }
-
-        public override string ToString()
-        {
-            return ScheduleTime + " " + TalkName;
+            string newEntry;
+            TrackSession.SetMorningSessionAvailability(newTalk);
+            var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
+            newEntry = Track[0].MorningSession[indexOfTalkName].Time + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+            return newEntry;
         }
     }
 
@@ -219,7 +213,5 @@ namespace NUnitTests
             IsAvailable = isAvailable;
             TalkName = talkName;
         }
-
-
     }
 }
