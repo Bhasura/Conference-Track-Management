@@ -51,7 +51,7 @@ namespace NUnitTests
 
             var result = sut.GetTrackOutput();
             Assert.That(result[0], Is.EqualTo("09:00 am Lua for the Masses 30min"));
-            Assert.That(result[1], Is.EqualTo("10:00 am Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[1], Is.EqualTo("09:30 am Ruby Errors from Mismatched Gem Versions 45min"));
         }
 
         [Test]
@@ -65,8 +65,8 @@ namespace NUnitTests
 
             var result = sut.GetTrackOutput();
             Assert.That(result[0], Is.EqualTo("09:00 am Lua for the Masses 30min"));
-            Assert.That(result[1], Is.EqualTo("10:00 am Ruby Errors from Mismatched Gem Versions 45min"));
-            Assert.That(result[2], Is.EqualTo("11:00 am Communicating Over Distance 60min"));
+            Assert.That(result[1], Is.EqualTo("09:30 am Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[2], Is.EqualTo("10:15 am Communicating Over Distance 60min"));
         }
 
         private static void AssertTrue(string input, string expected)
@@ -79,7 +79,6 @@ namespace NUnitTests
         }
     }
 
-  
 
     public class Scheduler
     {
@@ -109,94 +108,90 @@ namespace NUnitTests
             string scheduledTalk = string.Empty;
             if (newTalk.Contains("60min"))
             {
-                scheduledTalk = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk, 60);
             }
 
             if (newTalk.Contains("45min"))
             {
-                scheduledTalk = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk, 45);
             }
 
             if (newTalk.Contains("30min"))
             {
-                scheduledTalk = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk, 30);
 
             }
 
             if (newTalk.Contains("lightning"))
             {
-                scheduledTalk = OnAddTalkName(newTalk);
+                scheduledTalk = OnAddTalkName(newTalk, 5);
             }
 
             return scheduledTalk;
         }
 
-        private static string OnAddTalkName(string newTalk)
+        private static string OnAddTalkName(string newTalk, int lengthOfTalk)
         {
             string newEntry = string.Empty;
 
             if (Track.Any())
             {
-                newEntry = GetNewlyAddedSessionDetails(newTalk);
+                newEntry = GetNewlyAddedSessionDetails(newTalk, lengthOfTalk);
             }
             else
             { 
                 Track.Add(TrackSession);
-                newEntry = GetNewlyAddedSessionDetails(newTalk);
+                newEntry = GetNewlyAddedSessionDetails(newTalk, lengthOfTalk);
             }
 
             return newEntry;
         }
 
-        private static string GetNewlyAddedSessionDetails(string newTalk)
+        private static string GetNewlyAddedSessionDetails(string newTalk, int lengthOfTalk)
         {
             string newEntry;
-            TrackSession.SetMorningSessionAvailability(newTalk);
+            TrackSession.SetSessionAvailability(newTalk, lengthOfTalk);
             var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
-            newEntry = Track[0].MorningSession[indexOfTalkName].Time.ToString("HH:mm tt") + " " + Track[0].MorningSession[indexOfTalkName].TalkName;
+            newEntry = Track[0].Sessions[indexOfTalkName].StartTime.ToString("HH:mm tt") + " " + Track[0].Sessions[indexOfTalkName].TalkName;
             return newEntry;
         }
     }
 
     public class Session
     {
-        public List<Schedule> MorningSession { get; set; }
-        private List<Schedule> AfternoonSession { get; set; }
+        public List<Schedule> Sessions { get; set; }
 
         public Session()
         {
-            MorningSession = new List<Schedule>()
-            {
-                SetSchedule(new DateTime(2020,2,19,9,0,0,0), true, ""),
-                SetSchedule(new DateTime(2020,2,19,10,0,0,0), true, ""),
-                SetSchedule(new DateTime(2020,2,19,11,0,0,0), true, ""),
-                SetSchedule(new DateTime(2020,2,19,12,0,0,0), false, "Lunch")
-            };
+            Sessions = new List<Schedule>();
         }
 
-        public void SetMorningSessionAvailability(string talkName)
+        public void SetSessionAvailability(string talkName, int talkLength)
         {
-            for (var i = 0; i < MorningSession.Count;)
+            if (Sessions.Any())
             {
-                if (MorningSession[i].IsAvailable)
-                {
-                    MorningSession[i].IsAvailable = false;
-                    MorningSession[i].TalkName = talkName;
-                    break;
-                }
-                else
-                {
-                    i++;
-                }
+                var indexOfPreviousSchedule = Sessions.Count - 1;
+                var newScheduleStartTime = Sessions[indexOfPreviousSchedule].EndTime;
+                var newScheduledEndTime = newScheduleStartTime.AddMinutes(talkLength);
+                var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
+                Sessions.Add(newSchedule);
+            }
+            else
+            {
+                var startTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 9, 0, 0, 0);
+                var endTime = startTime.AddMinutes(talkLength);
+
+                var newSchedule = SetSchedule(startTime,endTime, talkName);
+                Sessions.Add(newSchedule);
             }
         }
 
         public int GetTalkNameIndex(string talkName)
         {
             var indexOfTalkName = 0;
-            for (var i = 0; i < MorningSession.Count;)
+            for (var i = 0; i < Sessions.Count;)
             {
-                if (MorningSession[i].TalkName == talkName)
+                if (Sessions[i].TalkName == talkName)
                 {
                     indexOfTalkName = i;
                     break;
@@ -211,23 +206,24 @@ namespace NUnitTests
             return indexOfTalkName;
         }
 
-        private Schedule SetSchedule(DateTime time, bool availability, string talkName)
+        private Schedule SetSchedule(DateTime startTime,DateTime endTime, string talkName)
         {
-            var schedule = new Schedule(time, availability, talkName);
+            var schedule = new Schedule(startTime,endTime, talkName);
             return schedule;
         }
     }
 
     public class Schedule
     {
-        public DateTime Time { get; set; }
-        public bool IsAvailable { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+
         public string TalkName { get; set; }
 
-        public Schedule(DateTime time, bool isAvailable, string talkName)
+        public Schedule(DateTime startTime,DateTime endTime, string talkName)
         {
-            Time = time;
-            IsAvailable = isAvailable;
+            StartTime = startTime;
+            EndTime = endTime;
             TalkName = talkName;
         }
     }
