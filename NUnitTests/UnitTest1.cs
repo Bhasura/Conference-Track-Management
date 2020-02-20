@@ -88,7 +88,7 @@ namespace NUnitTests
 
         public void AddToTrack(string newTalk)
         {
-            string newOutputLine = MinutesOfNewTalk(newTalk);
+            var newOutputLine = MinutesOfNewTalk(newTalk);
             TrackOutput.Add(newOutputLine);
         }
 
@@ -105,7 +105,7 @@ namespace NUnitTests
 
         private static string MinutesOfNewTalk(string newTalk)
         {
-            string scheduledTalk = string.Empty;
+            var scheduledTalk = string.Empty;
             if (newTalk.Contains("60min"))
             {
                 scheduledTalk = OnAddTalkName(newTalk, 60);
@@ -132,7 +132,7 @@ namespace NUnitTests
 
         private static string OnAddTalkName(string newTalk, int lengthOfTalk)
         {
-            string newEntry = string.Empty;
+            var newEntry = string.Empty;
 
             if (Track.Any())
             {
@@ -149,10 +149,9 @@ namespace NUnitTests
 
         private static string GetNewlyAddedSessionDetails(string newTalk, int lengthOfTalk)
         {
-            string newEntry;
-            TrackSession.SetSessionAvailability(newTalk, lengthOfTalk);
+            TrackSession.SetNewScheduleInSession(newTalk, lengthOfTalk);
             var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
-            newEntry = Track[0].Sessions[indexOfTalkName].StartTime.ToString("HH:mm tt") + " " + Track[0].Sessions[indexOfTalkName].TalkName;
+            var newEntry = Track[0].Sessions[indexOfTalkName].StartTime.ToString("HH:mm tt") + " " + Track[0].Sessions[indexOfTalkName].TalkName;
             return newEntry;
         }
     }
@@ -166,24 +165,34 @@ namespace NUnitTests
             Sessions = new List<Schedule>();
         }
 
-        public void SetSessionAvailability(string talkName, int talkLength)
+        public void SetNewScheduleInSession(string talkName, int talkLength)
         {
             if (Sessions.Any())
             {
-                var indexOfPreviousSchedule = Sessions.Count - 1;
-                var newScheduleStartTime = Sessions[indexOfPreviousSchedule].EndTime;
-                var newScheduledEndTime = newScheduleStartTime.AddMinutes(talkLength);
-                var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
-                Sessions.Add(newSchedule);
+                AddNewSchedule(talkName, talkLength);
             }
             else
             {
-                var startTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 9, 0, 0, 0);
-                var endTime = startTime.AddMinutes(talkLength);
-
-                var newSchedule = SetSchedule(startTime,endTime, talkName);
-                Sessions.Add(newSchedule);
+                AddFirstSchedule(talkName, talkLength);
             }
+        }
+
+        private void AddFirstSchedule(string talkName, int talkLength)
+        {
+            var startTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 9, 0, 0, 0);
+            var endTime = startTime.AddMinutes(talkLength);
+
+            var newSchedule = SetSchedule(startTime, endTime, talkName);
+            Sessions.Add(newSchedule);
+        }
+
+        private void AddNewSchedule(string talkName, int talkLength)
+        {
+            var indexOfPreviousSchedule = Sessions.Count - 1;
+            var newScheduleStartTime = Sessions[indexOfPreviousSchedule].EndTime;
+            var newScheduledEndTime = newScheduleStartTime.AddMinutes(talkLength);
+            var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
+            Sessions.Add(newSchedule);
         }
 
         public int GetTalkNameIndex(string talkName)
@@ -217,7 +226,6 @@ namespace NUnitTests
     {
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-
         public string TalkName { get; set; }
 
         public Schedule(DateTime startTime,DateTime endTime, string talkName)
