@@ -69,6 +69,28 @@ namespace NUnitTests
             Assert.That(result[2], Is.EqualTo("10:15 am Communicating Over Distance 60min"));
         }
 
+        [Test]
+        public void AddingManyTalksToTrackSessionAndReturnsAllTheAddedTracksIncludingLunchTime()
+        {
+            var sut = new Scheduler();
+            sut.InitConferenceScheduler();
+            sut.AddToTrack("Lua for the Masses 30min");
+            sut.AddToTrack("Ruby Errors from Mismatched Gem Versions 45min");
+            sut.AddToTrack("Communicating Over Distance 60min");
+            sut.AddToTrack("Common Ruby Errors 45min");
+            sut.AddToTrack("Sit Down and Write 30min");
+
+            var result = sut.GetTrackOutput();
+            Assert.That(result[0], Is.EqualTo("09:00 am Lua for the Masses 30min"));
+            Assert.That(result[1], Is.EqualTo("09:30 am Ruby Errors from Mismatched Gem Versions 45min"));
+            Assert.That(result[2], Is.EqualTo("10:15 am Communicating Over Distance 60min"));
+            Assert.That(result[3], Is.EqualTo("11:15 am Common Ruby Errors 45min"));
+            Assert.That(result[4], Is.EqualTo("12:00 pm Lunch"));
+            Assert.That(result[5], Is.EqualTo("13:00 pm Sit Down and Write 30min"));
+
+
+        }
+
         private static void AssertTrue(string input, string expected)
         {
             var sut = new Scheduler();
@@ -151,7 +173,12 @@ namespace NUnitTests
         {
             TrackSession.SetNewScheduleInSession(newTalk, lengthOfTalk);
             var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
-            var newEntry = Track[0].Sessions[indexOfTalkName].StartTime.ToString("HH:mm tt") + " " + Track[0].Sessions[indexOfTalkName].TalkName;
+            //var indexOfLunch = TrackSession.GetTalkNameIndex("Lunch");
+            if (TrackSession.Sessions[indexOfTalkName].StartTime.Hour == 13)
+            {
+                TrackOutput.Add("12:00 pm Lunch");
+            }
+            var newEntry = TrackSession.Sessions[indexOfTalkName].StartTime.ToString("HH:mm tt") + " " + TrackSession.Sessions[indexOfTalkName].TalkName;
             return newEntry;
         }
     }
@@ -191,9 +218,22 @@ namespace NUnitTests
             var indexOfPreviousSchedule = Sessions.Count - 1;
             var newScheduleStartTime = Sessions[indexOfPreviousSchedule].EndTime;
             var newScheduledEndTime = newScheduleStartTime.AddMinutes(talkLength);
+            if (newScheduledEndTime.Hour == 12 && newScheduledEndTime.Minute > 0)
+            {
+                var lunchTimeStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0, 0);
+                var lunchTimeEnd = lunchTimeStart.AddMinutes(60);
+                var lunchSchedule = SetSchedule(lunchTimeStart, lunchTimeEnd, "Lunch");
+                Sessions.Add(lunchSchedule);
+                newScheduleStartTime = lunchTimeEnd;
+                newScheduledEndTime = lunchTimeEnd.AddMinutes(talkLength);
+            }
+
             var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
-            Sessions.Add(newSchedule);
+                Sessions.Add(newSchedule);
+            
+            
         }
+
 
         public int GetTalkNameIndex(string talkName)
         {
@@ -209,9 +249,7 @@ namespace NUnitTests
                 {
                     i++;
                 }
-                
             }
-
             return indexOfTalkName;
         }
 
@@ -227,7 +265,6 @@ namespace NUnitTests
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string TalkName { get; set; }
-
         public Schedule(DateTime startTime,DateTime endTime, string talkName)
         {
             StartTime = startTime;
