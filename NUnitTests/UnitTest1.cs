@@ -87,8 +87,6 @@ namespace NUnitTests
             Assert.That(result[3], Is.EqualTo("11:15 am Common Ruby Errors 45min"));
             Assert.That(result[4], Is.EqualTo("12:00 pm Lunch"));
             Assert.That(result[5], Is.EqualTo("13:00 pm Sit Down and Write 30min"));
-
-
         }
 
         private static void AssertTrue(string input, string expected)
@@ -100,7 +98,6 @@ namespace NUnitTests
             Assert.That(result[0], Is.EqualTo(expected));
         }
     }
-
 
     public class Scheduler
     {
@@ -173,7 +170,6 @@ namespace NUnitTests
         {
             TrackSession.SetNewScheduleInSession(newTalk, lengthOfTalk);
             var indexOfTalkName = TrackSession.GetTalkNameIndex(newTalk);
-            //var indexOfLunch = TrackSession.GetTalkNameIndex("Lunch");
             if (TrackSession.Sessions[indexOfTalkName].StartTime.Hour == 13)
             {
                 TrackOutput.Add("12:00 pm Lunch");
@@ -218,6 +214,14 @@ namespace NUnitTests
             var indexOfPreviousSchedule = Sessions.Count - 1;
             var newScheduleStartTime = Sessions[indexOfPreviousSchedule].EndTime;
             var newScheduledEndTime = newScheduleStartTime.AddMinutes(talkLength);
+            newScheduledEndTime = CheckClashWithLunchTime(talkLength, newScheduledEndTime, ref newScheduleStartTime);
+
+            var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
+                Sessions.Add(newSchedule);
+        }
+
+        private DateTime CheckClashWithLunchTime(int talkLength, DateTime newScheduledEndTime, ref DateTime newScheduleStartTime)
+        {
             if (newScheduledEndTime.Hour == 12 && newScheduledEndTime.Minute > 0)
             {
                 var lunchTimeStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 12, 0, 0, 0);
@@ -228,12 +232,8 @@ namespace NUnitTests
                 newScheduledEndTime = lunchTimeEnd.AddMinutes(talkLength);
             }
 
-            var newSchedule = SetSchedule(newScheduleStartTime, newScheduledEndTime, talkName);
-                Sessions.Add(newSchedule);
-            
-            
+            return newScheduledEndTime;
         }
-
 
         public int GetTalkNameIndex(string talkName)
         {
